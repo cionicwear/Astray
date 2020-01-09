@@ -1,7 +1,7 @@
 <html>
 
     <head>
-    
+        <script type="text/javascript" src="cionic.min.js"></script>
         <script src='Box2dWeb.min.js'></script>
         <script src="Three.js"></script>
         <script src="keyboard.js"></script>
@@ -9,6 +9,9 @@
         <script src="maze.js"></script>
 
         <script>
+            // set game mode
+            const GameModesEnum = Object.freeze({"CIONIC":1, "NORMAL":2});
+            const gameMode = GameModesEnum.CIONIC;
 
             var camera         = undefined, 
                 scene          = undefined, 
@@ -27,6 +30,7 @@
                 planeTexture   = THREE.ImageUtils.loadTexture('/concrete.png'),
                 brickTexture   = THREE.ImageUtils.loadTexture('/brick.png'),
                 gameState      = undefined,
+
 
             // Box2D shortcuts
                 b2World        = Box2D.Dynamics.b2World,
@@ -145,7 +149,7 @@
                 // Apply user-directed force.
                 var f = new b2Vec2(keyAxis[0]*wBall.GetMass()*0.25, keyAxis[1]*wBall.GetMass()*0.25);
                 wBall.ApplyImpulse(f, wBall.GetPosition());          
-                keyAxis = [0,0];
+                if (gameMode == GameModesEnum.NORMAL) keyAxis = [0,0];
 
                 // Take a time step.
                 wWorld.Step(1/60, 8, 3);
@@ -274,10 +278,39 @@
                 this.centerv();
                 this.centerh();
                 return this;
-            }            
-
+            }
             
             $(document).ready(function() {
+                // instantiate Cionic SDK
+                const cionic = new cionicjs.Cionic({
+                    streamLogger: function(msg, cls) {
+                        var logDiv = document.getElementById('log');
+                        logDiv.innerHTML += '<div class="'+cls+'">&gt;&nbsp;' + msg + '</div>';
+                        logDiv.scrollTop = logDiv.scrollHeight;
+                }});
+
+                // add Cionic listeners
+                cionic.Stream.registerListener('lPress', function(isPressed) {
+                    isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = -1;
+                });
+
+                cionic.Stream.registerListener('rPress', function(isPressed) {
+                    isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = 1;
+                });
+
+                cionic.Stream.registerListener('uPress', function(isPressed) {
+                    isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = 1;
+                });
+
+                cionic.Stream.registerListener('dPress', function(isPressed) {
+                    isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = -1;
+                });
+
+                document.getElementById('cionic-connect').onclick = function () {
+                    let host = document.getElementById('host').value;
+                    cionic.Stream.socket(host);
+                };
+
 
                 // Prepare the instructions.
                 $('#instructions').center();
@@ -302,14 +335,11 @@
                 // Start the game loop.
                 requestAnimationFrame(gameLoop);
 
-            })
-            
-            
+            });
 
         </script>
-    
+
         <style>
-        
             body {
                 background: black;
                 margin: 0;
@@ -329,7 +359,7 @@
 
             #help {
                 position: absolute;
-                left: 0px;
+                right: 0px;
                 bottom: 0px;
                 padding: 4px;
                 color: white;   
@@ -342,6 +372,24 @@
                 padding: 4px;
                 color: yellow;   
                 font-weight: bold;
+            }
+
+            #cionic-container {
+                position: absolute;
+                left: 0px;
+                bottom: 0px;
+                padding: 4px;
+            }
+
+            #log {
+                width:300px; 
+                height:100px;
+                background-color:#fff;
+                color:green;
+                overflow-y:scroll;
+                overflow-x: hidden;
+                border: 1px solid #999;
+                margin: 5px 0px;
             }
 
         </style>
@@ -358,6 +406,11 @@
         Vim trainees: h, j, k, l
     </div>
     
+    <div id="cionic-container">
+        <input type="text" name="host" id="host" style="width:150px" value="localhost:8080"/>
+        <input type="button" id="cionic-connect" value="Connect"/>
+        <div id="log"></div>
+    </div>
     <div id='help'>
         Hold down the 'I' key for instructions.
     </div>
@@ -366,6 +419,8 @@
         Level 1
     </div>
     
+    <script type="text/javascript" src="test.js"></script>
+
     </body>
 
 </html>
