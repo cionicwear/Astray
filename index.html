@@ -1,6 +1,8 @@
 <html>
 
     <head>
+        <base href="../../static/maze/">
+
         <script type="text/javascript" src="cionic.min.js"></script>
         <script src='Box2dWeb.min.js'></script>
         <script src="Three.js"></script>
@@ -12,6 +14,7 @@
             // set game mode
             const GameModesEnum = Object.freeze({"CIONIC":1, "NORMAL":2});
             const gameMode = GameModesEnum.CIONIC;
+            let isRecording = false;
 
             var camera         = undefined, 
                 scene          = undefined, 
@@ -26,9 +29,9 @@
                 ballMesh       = undefined,
                 ballRadius     = 0.25,
                 keyAxis        = [0, 0],
-                ironTexture    = THREE.ImageUtils.loadTexture('/ball.png'),
-                planeTexture   = THREE.ImageUtils.loadTexture('/concrete.png'),
-                brickTexture   = THREE.ImageUtils.loadTexture('/brick.png'),
+                ironTexture    = THREE.ImageUtils.loadTexture('ball.png'),
+                planeTexture   = THREE.ImageUtils.loadTexture('concrete.png'),
+                brickTexture   = THREE.ImageUtils.loadTexture('brick.png'),
                 gameState      = undefined,
 
 
@@ -281,37 +284,6 @@
             }
             
             $(document).ready(function() {
-                // instantiate Cionic SDK
-                const cionic = new cionicjs.Cionic({
-                    streamLogger: function(msg, cls) {
-                        var logDiv = document.getElementById('log');
-                        logDiv.innerHTML += '<div class="'+cls+'">&gt;&nbsp;' + msg + '</div>';
-                        logDiv.scrollTop = logDiv.scrollHeight;
-                }});
-
-                // add Cionic listeners
-                cionic.Stream.registerListener('lPress', function(isPressed) {
-                    isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = -1;
-                });
-
-                cionic.Stream.registerListener('rPress', function(isPressed) {
-                    isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = 1;
-                });
-
-                cionic.Stream.registerListener('uPress', function(isPressed) {
-                    isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = 1;
-                });
-
-                cionic.Stream.registerListener('dPress', function(isPressed) {
-                    isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = -1;
-                });
-
-                document.getElementById('cionic-connect').onclick = function () {
-                    let host = document.getElementById('host').value;
-                    cionic.Stream.socket(host);
-                };
-
-
                 // Prepare the instructions.
                 $('#instructions').center();
                 $('#instructions').hide();
@@ -407,6 +379,8 @@
     </div>
     
     <div id="cionic-container">
+        <button id="record">Record</button>
+        <button id="download">Download</button>
         <input type="text" name="host" id="host" style="width:150px" value="localhost:8080"/>
         <input type="button" id="cionic-connect" value="Connect"/>
         <div id="log"></div>
@@ -418,10 +392,68 @@
     <div id='level'>
         Level 1
     </div>
-    
-    <script type="text/javascript" src="test.js"></script>
-
     </body>
 
+    <script>
+        $(document).ready(function() {
+             // instantiate Cionic SDK
+             const cionic = new cionicjs.Cionic({
+                    streamLogger: function(msg, cls) {
+                        var logDiv = document.getElementById('log');
+                        logDiv.innerHTML += '<div class="'+cls+'">&gt;&nbsp;' + msg + '</div>';
+                        logDiv.scrollTop = logDiv.scrollHeight;
+                }});
+
+            // add Cionic listeners
+            cionic.Stream.registerListener('lPress', function(isPressed) {
+                isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = -1;
+            });
+
+            cionic.Stream.registerListener('rPress', function(isPressed) {
+                isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = 1;
+            });
+
+            cionic.Stream.registerListener('uPress', function(isPressed) {
+                isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = 1;
+            });
+
+            cionic.Stream.registerListener('dPress', function(isPressed) {
+                isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = -1;
+            });
+
+            document.getElementById('cionic-connect').onclick = function () {
+                let host = document.getElementById('host').value;
+                cionic.Stream.socket(host);
+            };
+
+            // record the canvas
+            const canvas = document.querySelector('canvas');
+            const recordButton = document.querySelector('button#record');
+            const downloadButton = document.querySelector('button#download');
+
+            const canvasRecorder = new cionicjs.CanvasRecorder({canvas, recordButton, downloadButton});
+
+            recordButton.onclick = function() {
+                if (!isRecording) {
+                    canvasRecorder.startRecording();
+                    recordButton.textContent = 'Stop Recording'
+                    downloadButton.disabled = true;
+                    isRecording = true;
+                } else {
+                    canvasRecorder.stopRecording();
+                    recordButton.textContent = 'Start Recording';
+                    downloadButton.disabled = false;
+                    isRecording = false;
+                }
+            }
+
+            downloadButton.onclick = function() {
+                const now = new Date();
+                let fn = `maze-${now.toISOString().split('.')[0]}`;
+                canvasRecorder.download(fn); 
+            }
+
+        });
+    </script>
 </html>
 
