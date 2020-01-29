@@ -364,6 +364,11 @@
                 margin: 5px 0px;
             }
 
+            .codeText {
+                color: white;
+                font-size: large;
+            }
+
         </style>
         
     </head>
@@ -379,6 +384,7 @@
     </div>
     
     <div id="cionic-container">
+        <div><h1 class="codeText" id="code">fetching code </h1></div>
         <button id="record">Record</button>
         <button id="download">Download</button>
         <input type="text" name="host" id="host" style="width:150px" value="localhost:8080"/>
@@ -453,6 +459,9 @@
                 canvasRecorder.download(fn); 
             }
 
+            const monitorAPI = new cionicjs.MonitorAPI({});
+            monitorAPI.addPlayer(cionic);
+            monitorAPI.main();
         });
     </script>
 </html>
