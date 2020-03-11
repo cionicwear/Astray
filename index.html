@@ -1,8 +1,8 @@
 <html>
 
     <head>
-        <base href="/maze/0/">
-        <script src="http://app.cionic.com/cionic/32/cionic.min.js"></script>
+        <base href="/maze/1/">
+        <script src="http://app.cionic.com/cionic/55/cionic.min.js"></script>
         <script src='Box2dWeb.min.js'></script>
         <script src="Three.js"></script>
         <script src="keyboard.js"></script>
@@ -349,6 +349,12 @@
                         cionic.sendBinary(blob);
                     }
                 });
+
+                // hide buttons if cannot record (ie not on Chrome or Firefox)
+                if (!canvasRecorder.canRecord) {
+                    $('#record').hide();
+                    $('#download').hide();
+                }
 
                 function startRecording() {
                     canvasRecorder.startRecording();
