@@ -1,7 +1,7 @@
 <html>
 
     <head>
-        <base href="/maze/1/">
+        <base href="/maze/2/">
         <script src="http://app.cionic.com/cionic/55/cionic.min.js"></script>
         <script src='Box2dWeb.min.js'></script>
         <script src="Three.js"></script>
@@ -389,19 +389,23 @@
                 }
 
                 // add Cionic listeners
-                cionic.Stream.registerListener('lPress', function(isPressed) {
+                //left
+                cionic.Stream.registerListener('37', function(isPressed) {
                     isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = -1;
                 });
 
-                cionic.Stream.registerListener('rPress', function(isPressed) {
+                // right
+                cionic.Stream.registerListener('39', function(isPressed) {
                     isPressed == "OFF" ? keyAxis[0] = 0 : keyAxis[0] = 1;
                 });
 
-                cionic.Stream.registerListener('uPress', function(isPressed) {
+                // forward
+                cionic.Stream.registerListener('38', function(isPressed) {
                     isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = 1;
                 });
 
-                cionic.Stream.registerListener('dPress', function(isPressed) {
+                // backward
+                cionic.Stream.registerListener('40', function(isPressed) {
                     isPressed == "OFF" ? keyAxis[1] = 0 : keyAxis[1] = -1;
                 });
 
